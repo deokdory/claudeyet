@@ -424,4 +424,4 @@ Bun.serve({
   },
 });
 
-console.log(`CC Dashboard running at http://localhost:${PORT}${DEMO_MODE ? " (DEMO MODE)" : ""}`);
+console.log(`clawty running at http://localhost:${PORT}${DEMO_MODE ? " (DEMO MODE)" : ""}`);

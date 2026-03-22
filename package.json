@@ -1,5 +1,5 @@
 {
-  "name": "cc-dashboard",
+  "name": "clawty",
   "version": "0.1.0",
   "description": "Real-time Claude Code session monitoring dashboard",
   "scripts": {

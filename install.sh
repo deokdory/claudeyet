@@ -3,7 +3,7 @@ set -euo pipefail
 
 PORT="${1:-3333}"
 INSTALL_DIR="$(cd "$(dirname "$0")" && pwd)"
-SERVICE_NAME="cc-dashboard"
+SERVICE_NAME="clawty"
 SETTINGS_FILE="$HOME/.claude/settings.json"
 
 # --- Colors ---
@@ -67,7 +67,7 @@ HOOK_PERMISSION=$(jq -n --arg url "${BASE_URL}?event=permission" \
 HOOK_STOP=$(jq -n --arg url "${BASE_URL}?event=stop" \
   '[{"hooks": [{"type": "http", "url": $url, "timeout": 2}]}]')
 
-# Remove existing cc-dashboard hooks (matching our URL pattern), then add new ones
+# Remove existing clawty hooks (matching our URL pattern), then add new ones
 TEMP_FILE=$(mktemp)
 jq --argjson prompt "$HOOK_PROMPT" \
    --argjson permission "$HOOK_PERMISSION" \
@@ -103,7 +103,7 @@ mkdir -p "$SERVICE_DIR"
 
 cat > "${SERVICE_DIR}/${SERVICE_NAME}.service" << EOF
 [Unit]
-Description=CC Dashboard - Claude Code Session Monitor
+Description=clawty - Claude Code Session Monitor
 After=network.target
 
 [Service]

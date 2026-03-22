@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-SERVICE_NAME="cc-dashboard"
+SERVICE_NAME="clawty"
 SETTINGS_FILE="$HOME/.claude/settings.json"
 
 RED='\033[0;31m'

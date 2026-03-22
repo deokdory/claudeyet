@@ -1,6 +1,6 @@
-# claudeyet
+# clawty
 
-### _"Claude, are we there yet?"_
+### _**Cla**ude, **w**e **t**here **y**et?_
 
 Real-time session monitoring dashboard for [Claude Code](https://docs.anthropic.com/en/docs/claude-code).
 
@@ -42,8 +42,8 @@ Watch your Claude Code sessions come alive — track active sessions, subagent o
 ## Installation
 
 ```bash
-git clone git@github.com:deokdory/claudeyet.git
-cd claudeyet
+git clone git@github.com:deokdory/clawty.git
+cd clawty
 ./install.sh        # default port 3333
 # or
 ./install.sh 8080   # custom port
@@ -70,13 +70,13 @@ Removes the service and hooks. Project files are kept for manual deletion.
 ## How It Works
 
 ```
-Claude Code  ──hook──>  claudeyet server  ──SSE──>  Browser
+Claude Code  ──hook──>  clawty server  ──SSE──>  Browser
    (prompt)                (Bun.serve)               (index.html)
    (permission)            port 3333
    (stop)
 ```
 
-claudeyet reads JSONL session logs from `~/.claude/projects/` and receives real-time lifecycle events via HTTP hooks. The browser connects through Server-Sent Events for instant updates.
+clawty reads JSONL session logs from `~/.claude/projects/` and receives real-time lifecycle events via HTTP hooks. The browser connects through Server-Sent Events for instant updates.
 
 <br>
 

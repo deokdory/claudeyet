@@ -4,6 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>clawty</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:wght@600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
   <style>
     :root {
       --bg: #0d1117;
@@ -11,11 +15,11 @@
       --card-border: #30363d;
       --text: #c9d1d9;
       --text-muted: #8b949e;
-      --active: #58a6ff;
+      --active: #F07B56;
       --recent: #3fb950;
       --waiting: #d29922;
       --idle: #484f58;
-      --accent: #58a6ff;
+      --accent: #F07B56;
 
       --text-bright: #e6edf3;
       --text-secondary: #8b949e;
@@ -23,19 +27,19 @@
       --error: #f85149;
 
       --sidebar-hover: #21262d;
-      --sidebar-selected-bg: rgba(88, 166, 255, 0.08);
-      --sidebar-badge-bg: rgba(88, 166, 255, 0.15);
+      --sidebar-selected-bg: rgba(240, 123, 86, 0.08);
+      --sidebar-badge-bg: rgba(240, 123, 86, 0.15);
       --overlay-bg: rgba(0, 0, 0, 0.6);
 
-      --card-active-gradient: #0d1f33;
-      --card-active-border: rgba(88, 166, 255, 0.4);
+      --card-active-gradient: #1f1108;
+      --card-active-border: rgba(240, 123, 86, 0.4);
       --card-waiting-gradient: #2a1f0a;
       --card-waiting-border: rgba(210, 153, 34, 0.4);
       --card-recent-gradient: #0c1f12;
       --card-recent-border: rgba(63, 185, 80, 0.35);
       --card-archived-border: #21262d;
 
-      --badge-active-bg: #122d4f;
+      --badge-active-bg: #2a1a14;
       --badge-waiting-bg: #2a1f0a;
       --badge-recent-bg: #0f2c18;
       --badge-idle-bg: #1c1f24;
@@ -44,7 +48,7 @@
       --bubble-assistant-bg: #2c2f35;
       --bubble-text: #c9d1d9;
 
-      --subagent-badge-bg: rgba(88, 166, 255, 0.1);
+      --subagent-badge-bg: rgba(240, 123, 86, 0.1);
     }
 
     @media (prefers-color-scheme: light) {
@@ -137,30 +141,30 @@
       --text-secondary: #8b949e;
       --text-archived: #6e7681;
       --error: #f85149;
-      --active: #58a6ff;
-      --accent: #58a6ff;
+      --active: #F07B56;
+      --accent: #F07B56;
       --recent: #3fb950;
       --waiting: #d29922;
       --idle: #484f58;
       --sidebar-hover: #21262d;
-      --sidebar-selected-bg: rgba(88, 166, 255, 0.08);
-      --sidebar-badge-bg: rgba(88, 166, 255, 0.15);
+      --sidebar-selected-bg: rgba(240, 123, 86, 0.08);
+      --sidebar-badge-bg: rgba(240, 123, 86, 0.15);
       --overlay-bg: rgba(0, 0, 0, 0.6);
-      --card-active-gradient: #0d1f33;
-      --card-active-border: rgba(88, 166, 255, 0.4);
+      --card-active-gradient: #1f1108;
+      --card-active-border: rgba(240, 123, 86, 0.4);
       --card-waiting-gradient: #2a1f0a;
       --card-waiting-border: rgba(210, 153, 34, 0.4);
       --card-recent-gradient: #0c1f12;
       --card-recent-border: rgba(63, 185, 80, 0.35);
       --card-archived-border: #21262d;
-      --badge-active-bg: #122d4f;
+      --badge-active-bg: #2a1a14;
       --badge-waiting-bg: #2a1f0a;
       --badge-recent-bg: #0f2c18;
       --badge-idle-bg: #1c1f24;
       --bubble-user-bg: #353840;
       --bubble-assistant-bg: #2c2f35;
       --bubble-text: #c9d1d9;
-      --subagent-badge-bg: rgba(88, 166, 255, 0.1);
+      --subagent-badge-bg: rgba(240, 123, 86, 0.1);
     }
 
     *, *::before, *::after { box-sizing: border-box; }
@@ -194,10 +198,12 @@
     }
 
     header h1 {
-      font-size: 18px;
-      font-weight: 700;
+      font-family: 'Source Serif 4', Georgia, 'Times New Roman', serif;
+      font-size: 20px;
+      font-weight: 600;
       margin: 0;
       color: var(--text);
+      letter-spacing: -0.3px;
     }
 
     .header-right {
@@ -302,6 +308,12 @@
       max-width: 160px;
     }
 
+    .sidebar-badges {
+      display: flex;
+      gap: 4px;
+      margin-left: auto;
+      flex-shrink: 0;
+    }
     .sidebar-badge {
       font-size: 12px;
       border-radius: 10px;
@@ -309,6 +321,10 @@
       flex-shrink: 0;
       background: var(--sidebar-badge-bg);
       color: var(--active);
+    }
+    .sidebar-badge-recent {
+      background: var(--badge-recent-bg);
+      color: var(--recent);
     }
 
     .sidebar-separator {
@@ -718,7 +734,7 @@
       <h1>clawty</h1>
     </div>
     <div class="header-right">
-      <button class="theme-toggle" id="themeToggle" title="Toggle theme">&#9728;</button>
+      <button class="theme-toggle" id="themeToggle" title="Toggle theme"><span class="material-icons" style="font-size:18px">light_mode</span></button>
       <span class="connection-status disconnected" id="connStatus">Connecting...</span>
     </div>
   </header>
@@ -759,7 +775,9 @@
     }
     function applyTheme(theme) {
       document.documentElement.setAttribute('data-theme', theme);
-      themeToggle.innerHTML = '&#9728;';
+      themeToggle.innerHTML = theme === 'light'
+        ? '<span class="material-icons" style="font-size:18px">dark_mode</span>'
+        : '<span class="material-icons" style="font-size:18px">light_mode</span>';
     }
     applyTheme(getEffectiveTheme());
     themeToggle.addEventListener('click', () => {
@@ -805,9 +823,12 @@
       const { projects, sessions, archivedProjectIds } = data;
 
       const activeCounts = {};
+      const recentCounts = {};
       for (const s of sessions) {
         if (s.status === 'ACTIVE' || s.status === 'WAITING') {
           activeCounts[s.projectId] = (activeCounts[s.projectId] || 0) + 1;
+        } else if (s.status === 'RECENT') {
+          recentCounts[s.projectId] = (recentCounts[s.projectId] || 0) + 1;
         }
       }
 
@@ -816,9 +837,13 @@
       // "All" item
       const allSelected = selectedProjectId === null;
       const totalActive = sessions.filter(s => s.status === 'ACTIVE' || s.status === 'WAITING').length;
+      const totalRecent = sessions.filter(s => s.status === 'RECENT').length;
       html += `<div class="sidebar-item ${allSelected ? 'selected' : ''}" data-project="">
         <span class="sidebar-item-name">All Projects</span>
-        ${totalActive > 0 ? `<span class="sidebar-badge">${totalActive}</span>` : ''}
+        <span class="sidebar-badges">
+          ${totalRecent > 0 ? `<span class="sidebar-badge sidebar-badge-recent">${totalRecent}</span>` : ''}
+          ${totalActive > 0 ? `<span class="sidebar-badge">${totalActive}</span>` : ''}
+        </span>
       </div>`;
 
       html += '<div class="sidebar-separator"></div>';
@@ -835,10 +860,14 @@
       for (const p of sortedProjects) {
         const isArchived = archivedProjectIds.includes(p.id);
         const activeCount = activeCounts[p.id] || 0;
+        const recentCount = recentCounts[p.id] || 0;
         const selected = selectedProjectId === p.id;
         html += `<div class="sidebar-item ${selected ? 'selected' : ''} ${isArchived ? 'archived-project' : ''}" data-project="${p.id}">
           <span class="sidebar-item-name" title="${p.path}">${p.displayName}</span>
-          ${activeCount > 0 ? `<span class="sidebar-badge">${activeCount}</span>` : ''}
+          <span class="sidebar-badges">
+            ${recentCount > 0 ? `<span class="sidebar-badge sidebar-badge-recent">${recentCount}</span>` : ''}
+            ${activeCount > 0 ? `<span class="sidebar-badge">${activeCount}</span>` : ''}
+          </span>
         </div>`;
       }
 

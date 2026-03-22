@@ -1,7 +1,7 @@
 import { discoverProjects, discoverSessions, scanSubagents, CLAUDE_PROJECTS_DIR } from "./scanner";
 import { classifyStatus, getActiveSessionsFromPidFiles } from "./session";
 import { readJsonlHead, readJsonlTail, extractCustomTitle, extractTitle, extractLastMessages, extractMeta, hasTrailingToolUse, extractTokenUsage } from "./jsonl";
-import { statSync } from "fs";
+import { statSync, readdirSync } from "fs";
 import type { DashboardState, SessionView, Project, SessionCacheEntry, SessionMeta } from "./types";
 
 const ARCHIVE_THRESHOLD_MS = 3 * 24 * 60 * 60 * 1000; // 3 days
@@ -22,23 +22,50 @@ const hookAssistantMessages = new Map<string, MessagePreview>();
 let lastPidCheck = 0;
 const PID_CHECK_INTERVAL = 30_000; // 30s
 
+const JSONL_ACTIVE_THRESHOLD = 30_000; // 30s — JSONL written recently = likely working
+
+function isSessionJsonlActive(sessionId: string): boolean {
+  // Check if the session's JSONL file was recently modified
+  try {
+    const projects = readdirSync(CLAUDE_PROJECTS_DIR, { withFileTypes: true });
+    for (const p of projects) {
+      if (!p.isDirectory()) continue;
+      const jsonlPath = `${CLAUDE_PROJECTS_DIR}/${p.name}/${sessionId}.jsonl`;
+      try {
+        const stat = statSync(jsonlPath);
+        if (Date.now() - stat.mtimeMs < JSONL_ACTIVE_THRESHOLD) return true;
+      } catch { /* not in this project */ }
+    }
+  } catch { /* ignore */ }
+  return false;
+}
+
+async function syncActiveSessionsFromPid() {
+  const alive = await getActiveSessionsFromPidFiles();
+  const now = Date.now();
+  for (const s of alive) {
+    if (!workingSessions.has(s.sessionId) && isSessionJsonlActive(s.sessionId)) {
+      workingSessions.set(s.sessionId, now);
+    }
+  }
+  return new Set(alive.map((s) => s.sessionId));
+}
+
 async function cleanExpiredWorking() {
   const now = Date.now();
   const cutoff = now - WORKING_TTL;
-  for (const [cwd, ts] of workingSessions) {
+  for (const [sid, ts] of workingSessions) {
     if (ts < cutoff) {
-      workingSessions.delete(cwd);
-      permissionSessions.delete(cwd);
+      workingSessions.delete(sid);
+      permissionSessions.delete(sid);
     }
   }
 
-  // PID fallback: only every 30s, and only for stale entries (>60s old)
-  if (workingSessions.size === 0 && permissionSessions.size === 0) return;
+  // PID sync: every 30s, discover new active sessions + clean dead ones
   if (now - lastPidCheck < PID_CHECK_INTERVAL) return;
   lastPidCheck = now;
 
-  const alive = await getActiveSessionsFromPidFiles();
-  const aliveSessionIds = new Set(alive.map((s) => s.sessionId));
+  const aliveSessionIds = await syncActiveSessionsFromPid();
   for (const [sid, ts] of workingSessions) {
     if (now - ts < 60_000) continue; // trust recent entries
     if (!aliveSessionIds.has(sid)) {
@@ -50,6 +77,11 @@ async function cleanExpiredWorking() {
     if (!aliveSessionIds.has(sid)) permissionSessions.delete(sid);
   }
 }
+
+// On startup: populate workingSessions from PID files
+syncActiveSessionsFromPid().then(() => {
+  if (workingSessions.size > 0) console.log(`[startup] Recovered ${workingSessions.size} working session(s) from PID + JSONL check`);
+});
 
 function isSessionWorking(sessionId: string): boolean {
   if (!sessionId) return false;

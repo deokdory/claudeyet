@@ -914,15 +914,15 @@
         messageHtml = `<div class="message-preview">${rows}</div>`;
       }
 
-      return `<div class="session-card ${cardClass} ${archivedClass}">
+      return `<div class="session-card ${cardClass} ${archivedClass}" data-sid="${s.id}">
         <div class="card-top-row">
           <div class="card-top-left">
             ${!selectedProjectId ? `<div class="card-project-name">${escapeHtml(s.projectDisplayName || '')}</div>` : ''}
             <span class="session-title" title="${escapeHtml(s.title || s.id)}">${escapeHtml(s.title || s.id.slice(0, 8) + '...')}</span>
           </div>
           <div class="card-top-right">
-            <span class="card-active-time">${timeAgo(s.lastActivityAt)}</span>
             <span class="status-badge ${statusClass}"${s.status === 'RECENT' ? ` onclick="dismissSession(event, '${s.id}')" style="cursor:pointer" title="Dismiss to IDLE"` : ''}>${s.status}</span>
+            <span class="card-active-time">${timeAgo(s.lastActivityAt)}</span>
           </div>
         </div>
         ${''}<!-- tokens hidden -->
@@ -1066,9 +1066,48 @@
       }
       clearTimeout(renderTimeout);
       renderDeferred = false;
+
+      // FLIP: capture old positions
+      const oldPositions = {};
+      mainContent.querySelectorAll('.session-card[data-sid]').forEach(el => {
+        oldPositions[el.dataset.sid] = el.getBoundingClientRect();
+      });
+
       renderSidebar(state);
       renderMain(state);
       updateStats(state);
+
+      // FLIP: animate to new positions / fade in new cards
+      mainContent.querySelectorAll('.session-card[data-sid]').forEach(el => {
+        const oldRect = oldPositions[el.dataset.sid];
+        if (!oldRect) {
+          // New card: fade + slide in
+          el.style.opacity = '0';
+          el.style.transform = 'translateY(-12px)';
+          el.style.transition = 'none';
+          requestAnimationFrame(() => {
+            el.style.transition = 'opacity 0.35s ease, transform 0.35s ease';
+            el.style.opacity = '1';
+            el.style.transform = '';
+            el.addEventListener('transitionend', () => {
+              el.style.transition = '';
+            }, { once: true });
+          });
+          return;
+        }
+        const newRect = el.getBoundingClientRect();
+        const dy = oldRect.top - newRect.top;
+        if (Math.abs(dy) < 2) return;
+        el.style.transform = `translateY(${dy}px)`;
+        el.style.transition = 'none';
+        requestAnimationFrame(() => {
+          el.style.transition = 'transform 0.3s ease';
+          el.style.transform = '';
+          el.addEventListener('transitionend', () => {
+            el.style.transition = '';
+          }, { once: true });
+        });
+      });
     }
 
     function renderAll() {

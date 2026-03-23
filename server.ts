@@ -14,6 +14,7 @@ const sessionCache = new Map<string, SessionCacheEntry>();
 const workingSessions = new Map<string, number>();
 const permissionSessions = new Set<string>(); // sessionIds waiting for permission
 const forcedIdleSessions = new Set<string>(); // manually dismissed to IDLE
+const stoppedSessions = new Set<string>(); // received "stop" hook — prevent PID sync re-add
 
 // Hook-based message cache: sessionId → MessagePreview
 const hookUserMessages = new Map<string, MessagePreview>();
@@ -44,7 +45,7 @@ async function syncActiveSessionsFromPid() {
   const alive = await getActiveSessionsFromPidFiles();
   const now = Date.now();
   for (const s of alive) {
-    if (!workingSessions.has(s.sessionId) && isSessionJsonlActive(s.sessionId)) {
+    if (!workingSessions.has(s.sessionId) && !stoppedSessions.has(s.sessionId) && isSessionJsonlActive(s.sessionId)) {
       workingSessions.set(s.sessionId, now);
     }
   }
@@ -71,10 +72,17 @@ async function cleanExpiredWorking() {
     if (!aliveSessionIds.has(sid)) {
       workingSessions.delete(sid);
       permissionSessions.delete(sid);
+    } else if (!isSessionJsonlActive(sid)) {
+      // PID alive but JSONL stale — CLI waiting for input, not actively working
+      workingSessions.delete(sid);
+      permissionSessions.delete(sid);
     }
   }
   for (const sid of permissionSessions) {
     if (!aliveSessionIds.has(sid)) permissionSessions.delete(sid);
+  }
+  for (const sid of stoppedSessions) {
+    if (!aliveSessionIds.has(sid)) stoppedSessions.delete(sid);
   }
 }
 
@@ -398,6 +406,7 @@ Bun.serve({
         workingSessions.set(sessionId, Date.now());
         permissionSessions.delete(sessionId);
         forcedIdleSessions.delete(sessionId);
+        stoppedSessions.delete(sessionId);
         const prompt = body.prompt as string | undefined;
         if (prompt) {
           hookUserMessages.set(sessionId, {
@@ -411,6 +420,7 @@ Bun.serve({
       } else if (event === "stop" && sessionId) {
         workingSessions.delete(sessionId);
         permissionSessions.delete(sessionId);
+        stoppedSessions.add(sessionId);
         const lastMsg = body.last_assistant_message as string | undefined;
         if (lastMsg) {
           hookAssistantMessages.set(sessionId, {
@@ -436,6 +446,7 @@ Bun.serve({
         forcedIdleSessions.add(sessionId);
         workingSessions.delete(sessionId);
         permissionSessions.delete(sessionId);
+        stoppedSessions.delete(sessionId);
         if (!DEMO_MODE) {
           const state = await buildState();
           broadcast(state);
